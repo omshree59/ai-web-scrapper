@@ -140,39 +140,33 @@ Run locally:
 npm install
 npm run dev
 
-📊 Evaluation Alignment
+## 📊 Evaluation Alignment
 
 This project was built to optimize for:
 
-.Interface quality (clean, fast, usable)
-.Reliable live enrichment in production
-.Safe server-side key handling
-.Clear state management
-.Transparent, explainable outputs
-
+- Interface quality (clean, fast, usable)
+- Reliable live enrichment in production
+- Safe server-side key handling
+- Clear state management
+- Transparent, explainable outputs
 👨‍💻 Author
 
-Omshree
-VC Intelligence Interface + Live Enrichment
+## 👨‍💻 Author
+
+**Omshree**  
+VC Intelligence Interface + Live Enrichment  
 Intern Assignment – February 2026
 
 
 ---
 
-### 🔥 Why This Version Is Strong
+# VC Scout  ← Only H1
 
-- Directly mirrors the assignment brief
-- Clearly separates MVP vs stretch
-- Shows secure engineering practices
-- Avoids over-claiming
-- Reviewer can skim and understand everything quickly
-
----
-
-If you want, I can now:
-
-- Make a slightly more “senior-engineer tone” version  
-- Add a short 5-line executive summary at top  
-- Or polish language to sound more product-lead than intern  
-
-Tell me the vibe you want to project 👀
+## Assignment Overview
+## Product Workflow
+## Live Enrichment
+## Architecture
+## Technical Stack
+## Environment Setup
+## Evaluation Alignment
+## Author
