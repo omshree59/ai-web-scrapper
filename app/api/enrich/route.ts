@@ -3,15 +3,20 @@ import { NextResponse } from 'next/server';
 import Bytez from "bytez.js";
 
 export async function POST(req: Request) {
+  // 1. Declare 'url' outside so the final catch block can access it
+  let url = ""; 
+  
   try {
-    const { url, apiKey } = await req.json();
+    const body = await req.json();
+    url = body.url; // Assign the value here
+    const apiKey = body.apiKey;
+    
     console.log(`\n=== ENRICHING: ${url} ===`);
 
-    // 1. Scrape the website FIRST (we only need to do this once, regardless of which AI key we use)
     const scrapeRes = await fetch(`https://r.jina.ai/https://${url}`);
     const markdownText = await scrapeRes.text();
+    const contentSize = Buffer.byteLength(markdownText, 'utf8');
     
-    // Anti-Bot Detection
     const lowerText = markdownText.toLowerCase();
     if (
       scrapeRes.status === 403 || 
@@ -34,13 +39,11 @@ export async function POST(req: Request) {
       }
     `;
 
-    // 2. Build our "Waterfall" array of API Keys. 
-    // Priority: Frontend User Key -> Primary Env Key -> Fallback Env Key
     const keysToTry = [
       apiKey, 
       process.env.BYTEZ_API_KEY, 
       process.env.BYTEZ_API_KEY_FALLBACK
-    ].filter(Boolean) as string[]; // The .filter(Boolean) automatically removes any empty/missing keys!
+    ].filter(Boolean) as string[];
 
     if (keysToTry.length === 0) {
       return NextResponse.json({ error: "Missing API Key. Please add it in Settings." }, { status: 401 });
@@ -48,11 +51,8 @@ export async function POST(req: Request) {
 
     let lastModelError: any = null;
 
-    // 3. The Failover Loop: Try each key. If one fails, seamlessly move to the next!
     for (const currentKey of keysToTry) {
       try {
-        console.log(`Attempting AI generation with key ending in ...${currentKey.slice(-4)}`);
-        
         const sdk = new Bytez(currentKey);
         const model = sdk.model("meta-llama/Meta-Llama-3-8B-Instruct");
 
@@ -73,28 +73,25 @@ export async function POST(req: Request) {
 
         const extractedData = JSON.parse(jsonMatch[0]);
 
-        // SUCCESS! Return the data and exit the function entirely
         return NextResponse.json({
-          summary: extractedData.summary || extractedData.Summary || "Successfully analyzed, but the AI forgot the summary field.",
-          whatTheyDo: extractedData.whatTheyDo || extractedData.WhatTheyDo || ["Successfully analyzed, but feature list is missing."],
-          keywords: extractedData.keywords || extractedData.Keywords || ["Tech", "Startup"],
-          signals: extractedData.signals || extractedData.Signals || ["Active Website"],
+          summary: extractedData.summary || "Summary unavailable.",
+          whatTheyDo: extractedData.whatTheyDo || [],
+          keywords: extractedData.keywords || [],
+          signals: extractedData.signals || [],
+          scrapeSize: contentSize,
           sources: [{ url: `https://${url}`, timestamp: new Date().toISOString() }]
         });
 
       } catch (err: any) {
-        // If the key fails (e.g., out of credits), log a warning and let the loop continue to the next key!
-        console.warn(`Key ...${currentKey.slice(-4)} failed. Swapping to backup key...`);
         lastModelError = err;
+        continue;
       }
     }
 
-    // 4. If the code reaches here, it means the loop finished and ALL keys failed
     throw new Error(`All API keys exhausted. Last error: ${lastModelError?.message}`);
 
   } catch (error: any) {
     console.error("✖ API CRASHED:", error);
-    
     const isBotBlocked = error.message?.includes("Bot Protection");
 
     return NextResponse.json({
@@ -104,7 +101,8 @@ export async function POST(req: Request) {
       whatTheyDo: isBotBlocked ? ["Protected by CAPTCHA", "Bot traffic blocked"] : ["Error caught successfully"],
       keywords: ["Scrape Failed", isBotBlocked ? "403 Forbidden" : "Error"],
       signals: [isBotBlocked ? "High Security Website" : "Failed extraction"],
-      sources: [{ url: `https://${url}`, timestamp: new Date().toISOString() }]
+      // Now 'url' is correctly available here!
+      sources: [{ url: url ? `https://${url}` : "Unknown URL", timestamp: new Date().toISOString() }]
     });
   }
 }
