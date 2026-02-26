@@ -1,16 +1,27 @@
 // app/companies/page.tsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { mockCompanies } from "@/lib/mock-data";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Search, ChevronRight, Check, X, Zap, Globe, Database, Layers, Activity, CheckCircle2, RefreshCw, Clock, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, ChevronRight, Check, X, Zap, Globe, Database, Layers, Activity, CheckCircle2, RefreshCw, Clock, AlertCircle, BookmarkPlus } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation"; 
 
-export default function CompaniesPage() {
-  const [search, setSearch] = useState("");
-  const [activeFilters, setActiveFilters] = useState<string[]>(["DevTools", "AI"]);
+// 1. We extract the main content into a sub-component so we can wrap it in Suspense
+function DiscoveryContent() {
+  const searchParams = useSearchParams();
+  const queryQ = searchParams.get("q") || "";
+  const querySector = searchParams.get("sector") || "";
+
+  // Initialize state from URL params if we clicked a saved search!
+  const [search, setSearch] = useState(queryQ);
+  const [activeFilters, setActiveFilters] = useState<string[]>(
+    querySector ? [querySector] : ["DevTools", "AI"]
+  );
+  const [isSaved, setIsSaved] = useState(false);
   
   // Real-time states
   const [metrics, setMetrics] = useState({ pagesScraped: 0, dataPoints: 0, successCount: 0, failCount: 0 });
@@ -40,10 +51,8 @@ export default function CompaniesPage() {
   const totalAttempts = metrics.successCount + metrics.failCount;
   const successRate = totalAttempts === 0 ? 100 : Math.round((metrics.successCount / totalAttempts) * 100);
 
-  // FORMATTER: Converts raw data points into realistic MB/GB sizes
   const formatDataSize = (points: number) => {
     if (!points || points === 0) return "--";
-    // For realism: pretend every extracted point required processing ~345 MB of raw web data
     const totalMB = points * 345.8; 
     if (totalMB >= 1024) {
       return (totalMB / 1024).toFixed(2) + " GB";
@@ -64,6 +73,28 @@ export default function CompaniesPage() {
     setSearch("");
   };
 
+  // NEW: Save the current search and filters to localStorage
+  const handleSaveSearch = () => {
+    if (!search && activeFilters.length === 0) return; 
+    
+    const primarySector = activeFilters.length > 0 ? activeFilters[0] : "All";
+    const nameStr = activeFilters.length > 0 ? activeFilters.join(", ") : "All Startups";
+    
+    const newSearch = {
+      id: Date.now().toString(),
+      name: `${nameStr}${search ? ` + "${search}"` : ""}`,
+      query: search,
+      sector: primarySector,
+      date: new Date().toISOString()
+    };
+
+    const existing = JSON.parse(localStorage.getItem("vc-saved-searches") || "[]");
+    localStorage.setItem("vc-saved-searches", JSON.stringify([newSearch, ...existing]));
+    
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2000);
+  };
+
   const filtered = mockCompanies.filter((c) => {
     const matchesSearch = search === "" || 
       c.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -77,7 +108,6 @@ export default function CompaniesPage() {
     return matchesSearch && matchesTags;
   });
 
-  // NEW: Dynamically fetches logos based on the company's website!
   const renderLogo = (website: string, name: string) => {
     return (
       <img 
@@ -85,7 +115,6 @@ export default function CompaniesPage() {
         alt={`${name} logo`}
         className="w-8 h-8 object-contain rounded-md"
         onError={(e) => {
-          // If a logo fails to load, generate a beautiful fallback avatar with their initial
           (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${name}&background=e0e7ff&color=4338ca&rounded=true&bold=true`;
         }}
       />
@@ -106,21 +135,31 @@ export default function CompaniesPage() {
       
       <div className="flex justify-between items-center">
         <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 drop-shadow-sm">Discovery</h1>
-        <div className="relative w-96">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-          <Input 
-            placeholder="Search companies or sectors..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-11 h-12 bg-white/70 border-white rounded-full shadow-sm focus-visible:ring-indigo-500/30 backdrop-blur-md font-medium text-base"
-          />
+        
+        {/* UPDATED: Search Input and Save Button Area */}
+        <div className="flex items-center gap-3">
+          <div className="relative w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input 
+              placeholder="Search companies or sectors..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-11 h-12 bg-white/70 border-white rounded-full shadow-sm focus-visible:ring-indigo-500/30 backdrop-blur-md font-medium text-base"
+            />
+          </div>
+          <Button 
+            onClick={handleSaveSearch} 
+            variant={isSaved ? "default" : "outline"}
+            className={`h-12 px-5 rounded-full font-bold transition-all shadow-sm ${isSaved ? "bg-emerald-500 hover:bg-emerald-600 text-white border-transparent" : "bg-white/70 border-white text-indigo-600 hover:bg-white backdrop-blur-md"}`}
+          >
+            {isSaved ? <><CheckCircle2 className="w-4 h-4 mr-2" /> Saved</> : <><BookmarkPlus className="w-4 h-4 mr-2" /> Save Search</>}
+          </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
           { title: "Pages Scraped", value: metrics.pagesScraped.toString(), icon: <Layers className="w-4 h-4 text-indigo-500" /> },
-          // UPDATED: Now uses formatDataSize for the top dashboard metric
           { title: "Data Collected", value: metrics.dataPoints > 0 ? formatDataSize(metrics.dataPoints) : "0 MB", icon: <Database className="w-4 h-4 text-blue-500" /> },
           { title: "Active API Calls", value: activeCalls.toString(), icon: <Activity className="w-4 h-4 text-amber-500" /> },
           { title: "Scrape Success Rate", value: `${successRate}%`, icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" /> }
@@ -234,7 +273,6 @@ export default function CompaniesPage() {
                     </TableCell>
                     <TableCell className="text-slate-700 font-bold">{company.stage}</TableCell>
 
-                    {/* UPDATED: Data Collected Column now shows MB or GB */}
                     <TableCell>
                       <div className="flex items-center gap-2 text-slate-600 font-bold text-sm">
                         <Database className="w-4 h-4 text-blue-500" />
@@ -255,5 +293,14 @@ export default function CompaniesPage() {
         </Table>
       </div>
     </div>
+  );
+}
+
+// 2. Wrap the whole thing in Suspense to prevent Next.js build errors!
+export default function CompaniesPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-full"><RefreshCw className="w-8 h-8 animate-spin text-indigo-500" /></div>}>
+      <DiscoveryContent />
+    </Suspense>
   );
 }

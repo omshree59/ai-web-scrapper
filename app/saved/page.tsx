@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bookmark, Trash2, ArrowRight, Search } from "lucide-react";
+import { Bookmark, Trash2, ArrowRight, Search, Play } from "lucide-react"; // Added Play icon
 import Link from "next/link";
 
 export default function SavedSearchesPage() {
@@ -54,10 +54,18 @@ export default function SavedSearchesPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 text-lg">"{search.query}"</h3>
-                  <p className="text-xs text-gray-500">Saved on {search.date}</p>
+                  <p className="text-xs text-gray-500">Saved on {new Date(search.date).toLocaleDateString()}</p>
                 </div>
               </div>
+              
+              {/* THE FIX: Added the Run Search button and grouped the actions */}
               <div className="flex items-center gap-2">
+                 {/* This Link dynamically passes the query back to the Discovery page */}
+                 <Link href={`/companies?q=${encodeURIComponent(search.query)}`}>
+                   <Button variant="secondary" size="sm" className="bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold">
+                     <Play className="w-3 h-3 mr-2" /> Run
+                   </Button>
+                 </Link>
                  <button onClick={() => handleDelete(search.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
