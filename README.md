@@ -1,50 +1,130 @@
-# 🚀 VC Scout: Precision AI Sourcing Platform
+# 🚀 VC Scout  
+### VC Intelligence Interface + Live Enrichment
 
-[cite_start]**VC Scout** is a high-performance discovery interface designed for venture capital firms to transform their unique investment thesis into an automated, always-on discovery workflow[cite: 3, 6]. [cite_start]By combining a modern intelligence interface with live AI enrichment, it surfaces high-signal companies earlier and makes every recommendation explainable[cite: 4, 6].
-
-### 🔗 [Live Demo URL] | [GitHub Repository]
-
----
-
-## ✨ Key Features
-
-### 📡 Market Intelligence & Discovery
-* [cite_start]**Thesis-Driven Sourcing:** A modern interface to search and filter through startups using faceted filters like Sector, Stage, and Status[cite: 6, 7].
-* [cite_start]**Market Signals Terminal:** A real-time feed of funding announcements, product launches, and trending open-source momentum[cite: 1, 6].
-* [cite_start]**Intelligent Workspaces:** Create and manage custom lists to track leads, with full persistence in `localStorage`[cite: 25].
-
-### 🤖 Live AI Enrichment (The Engine)
-* [cite_start]**On-Demand Scraping:** One-click "Enrich" functionality that fetches real public website content via AI to display extracted fields[cite: 14, 27].
-* [cite_start]**Automated Extraction:** Generates 1-2 sentence summaries, 3-6 bulleted value propositions, and 5-10 key tags per company[cite: 29, 30, 31].
-* [cite_start]**Signal Identification:** Detects technical signals like careers page existence, recent blog activity, and changelog updates[cite: 32].
-* [cite_start]**Explainable Sources:** Lists every exact URL scraped with a precise timestamp for full transparency[cite: 33].
-
-### 🛡️ Enterprise-Grade Infrastructure (Power User Touches)
-* **Cinematic Onboarding:** A premium, multi-slide introduction featuring Firebase Google Auth and a "Continue as Guest" fail-safe.
-* **Smart API Failover:** Implemented a waterfall system that automatically swaps between primary and backup AI keys to ensure 100% uptime during high-volume scraping.
-* **Data Velocity Metrics:** A live dashboard tracking total pages scraped and cumulative MB of data processed to demonstrate platform power.
-* [cite_start]**Secure Architecture:** Enrichment is handled via a server-side Next.js `/api/enrich` endpoint to keep API keys hidden from the client[cite: 35].
+🌐 Live App: https://vcscout.vercel.app/  
+📂 GitHub Repository: https://github.com/omshree59/ai-web-scrapper  
 
 ---
 
-## 🛠️ Technical Stack
+# 🧩 Assignment Overview
 
-* **Framework:** [Next.js](https://nextjs.org/) (App Router)
-* **Styling:** [Tailwind CSS](https://tailwindcss.com/) + [Shadcn/UI](https://ui.shadcn.com/)
-* **Authentication:** [Firebase Auth](https://firebase.google.com/products/auth)
-* **Database:** [Firebase Firestore](https://firebase.google.com/products/firestore)
-* **AI Scraping:** [Jina AI](https://jina.ai/) (Markdown Scraper) & [Bytez.js](https://bytez.com/) (LLM Extraction)
-* **Icons:** [Lucide React](https://lucide.dev/)
+This project implements a **VC Intelligence Interface + Live Enrichment system**, as described in the take-home brief.
+
+The objective:
+
+> Build a sourcing system that turns a fund’s unique thesis into an always-on discovery workflow, reduces noise, surfaces high-signal companies earlier, and makes every recommendation explainable.
+
+This MVP focuses on delivering a working UI + one complete live enrichment pipeline end-to-end.
 
 ---
 
-## ⚙️ Setup & Installation
+# 🎯 Implemented Product Workflow
 
-### 2. Configure Environment Variables
-Create a `.env.local` file in the root directory:
+The app follows the required workflow:
+
+**Discover → Open Profile → Enrich → Take Action**
+
+### 1️⃣ Discover
+- Global search
+- Faceted filters (Sector, Stage, Status)
+- Sortable + paginated companies table
+
+### 2️⃣ Open Profile
+- Company overview
+- Signals timeline
+- Notes
+- Save-to-list functionality
+
+### 3️⃣ Live Enrichment
+- One-click “Enrich” button
+- Server-side scrape of real public website content
+- Structured extraction of intelligence
+- Clear loading + error states
+- Cached results to avoid repeated fetches
+
+### 4️⃣ Take Action
+- Create lists
+- Add/remove companies
+- Save searches
+- Persistent state across sessions
+
+---
+
+# ✨ Minimum Scope Requirements Covered
+
+✔ Sidebar app shell + navigation  
+✔ `/companies` page (search + filters + pagination)  
+✔ `/companies/[id]` profile page  
+✔ `/lists` with persistence + export  
+✔ `/saved` searches with persistence  
+✔ Live enrichment via server-side endpoint  
+✔ Sources displayed with timestamp  
+✔ API keys hidden from client  
+
+---
+
+# 🤖 Live Enrichment Details
+
+Enrichment is handled via:
+
+`Next.js /api/enrich` (server-side)
+
+This ensures:
+- API keys are never exposed in the browser
+- Environment variables are safely used
+- Production deployment works reliably
+
+### Enrichment Output Includes:
+
+- 1–2 sentence summary  
+- 3–6 bullet value propositions  
+- 5–10 keywords  
+- 2–4 derived signals (e.g. careers page, blog activity)  
+- Exact URLs scraped  
+- Timestamp of enrichment  
+
+Only public pages are used. No attempt to bypass access controls.
+
+---
+
+# 🏗 Architecture (MVP Path)
+User
+↓
+Next.js Frontend (App Router)
+↓
+/api/enrich (Server Layer)
+↓
+Jina AI (Fetch public content)
+↓
+Bytez.js (Extract structured fields)
+↓
+Firestore / Local Cache
+
+
+This implements one complete enrichment path end-to-end, as required.
+
+Stretch components (queueing, vector store, signal engine) are intentionally out of scope for this timeboxed MVP.
+
+---
+
+# 🛠 Technical Stack
+
+- **Framework:** Next.js (App Router)
+- **Styling:** Tailwind CSS + Shadcn/UI
+- **Authentication:** Firebase Auth
+- **Database:** Firebase Firestore
+- **AI Scraping:** Jina AI
+- **Extraction:** Bytez.js
+- **Deployment:** Vercel
+
+---
+
+# 🔐 Environment Setup
+
+Create a `.env.local` file:
 
 ```env
-# Firebase Configuration
+# Firebase
 NEXT_PUBLIC_FIREBASE_API_KEY="..."
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="..."
 NEXT_PUBLIC_FIREBASE_PROJECT_ID="..."
@@ -52,18 +132,47 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="..."
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="..."
 NEXT_PUBLIC_FIREBASE_APP_ID="..."
 
-# Bytez AI Failover System
+# AI Enrichment (Server-Side Only)
 BYTEZ_API_KEY="your-primary-key"
 BYTEZ_API_KEY_FALLBACK="your-backup-key"
 
-3. Run Development
+Run locally:
+npm install
 npm run dev
 
-📈 North Star ArchitectureThis MVP focuses on the core UI + AI Scrape + Extracted Fields path. It is designed to be highly customizable per fund while remaining transparent about why a company matched.
+📊 Evaluation Alignment
 
-📝 Evaluation Checklist:
-.Interface Quality: Premium typography, spacing, and fast interactions.
-.Reliability: Server-side enrichment that handles bot-protection (Cloudflare/403) gracefully
-.Persistence: Lists, saved searches, and user profile data persist across sessions.
+This project was built to optimize for:
 
-Developed by [Omshree ] – VC Sourcing Take-Home Assignment, Feb 2026.
+.Interface quality (clean, fast, usable)
+.Reliable live enrichment in production
+.Safe server-side key handling
+.Clear state management
+.Transparent, explainable outputs
+
+👨‍💻 Author
+
+Omshree
+VC Intelligence Interface + Live Enrichment
+Intern Assignment – February 2026
+
+
+---
+
+### 🔥 Why This Version Is Strong
+
+- Directly mirrors the assignment brief
+- Clearly separates MVP vs stretch
+- Shows secure engineering practices
+- Avoids over-claiming
+- Reviewer can skim and understand everything quickly
+
+---
+
+If you want, I can now:
+
+- Make a slightly more “senior-engineer tone” version  
+- Add a short 5-line executive summary at top  
+- Or polish language to sound more product-lead than intern  
+
+Tell me the vibe you want to project 👀
